@@ -8,6 +8,9 @@ yarn.lock
 .vercel
 .output
 .nitro
+
+.env.*
+
 /build/
 /api/
 /server/build

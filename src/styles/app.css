@@ -1,21 +1,52 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-@layer base {
-  html {
-    color-scheme: light dark;
-  }
+* {
+  @apply outline-none;
+}
 
-  * {
-    @apply border-gray-200 dark:border-gray-800;
-  }
+.calendar th,
+.calendar td {
+  @apply calendar-cell;
+}
 
-  html,
-  body {
-    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
-  }
+.modal-box {
+  @apply max-w-3xl overflow-y-visible p-0;
+}
 
-  .using-mouse * {
-    outline: none !important;
-  }
+.modal-box fieldset {
+  @apply overflow-y-auto md:max-h-[calc(100vh-13rem)];
+}
+
+.modal-action {
+  @apply border-base-200 mt-0 border-t;
+}
+
+.modal-title,
+.modal-action {
+  @apply flex h-16 items-center px-4;
+}
+
+@utility absolute-center {
+  @apply absolute inset-1/2 -translate-1/2;
+}
+
+@utility modal-title {
+  @apply border-base-200 border-b p-4 text-lg font-bold;
+}
+
+@utility modal-close {
+  @apply btn btn-sm btn-square btn-ghost absolute top-4 right-4;
+}
+
+@utility caption {
+  @apply text-sm opacity-60 tracking-wide;
+}
+
+@utility calendar-cell {
+  @apply data-[sunday="true"]:text-red-400 data-[saturday="true"]:text-blue-400 data-[level="1"]:bg-accent p-2;
+}
+
+@utility calendar {
+  @apply table text-center;
 }

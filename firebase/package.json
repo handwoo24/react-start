@@ -1,0 +1,11 @@
+{
+  "name": "igm-attendance-firebase",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "firebase use igm-attendance && firebase emulators:start"
+  },
+  "author": "handwoo24",
+  "license": "ISC",
+  "description": ""
+}
