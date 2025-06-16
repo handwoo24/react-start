@@ -13,7 +13,8 @@
   "detail-history": "상세내역",
   "confirm-attend": "{name}을(를) 출석처리 하시겠습니까?",
   "attend": "출석",
-  "confirm-delete": "{datetime} {type} 이벤트를 삭제하시겠습니까?",
+  "confirm-delete-event": "{datetime} {type} 이벤트를 삭제하시겠습니까?",
+  "confirm-delete-address": "{address}을(를) 삭제하시겠습니까?",
   "acknowledgement": "출석 인정",
   "invalid-date": "유효한 날짜가 아닙니다.",
   "user-name": "이름",
@@ -51,5 +52,6 @@
   "sign-in-with-google": "구글로 로그인",
   "required-login": "로그인 후 이용해주세요.",
   "required-admin": "관리자 권한이 필요합니다.",
-  "back-to-home": "홈으로 돌아가기"
+  "back-to-home": "홈으로 돌아가기",
+  "no-attendees": "출석자가 없습니다."
 }

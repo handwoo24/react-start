@@ -4,13 +4,20 @@ import { getHeader } from "@tanstack/react-start/server";
 import dayjs from "dayjs";
 import { useAuthSession } from "~/auth/session";
 import { getAddresses } from "~/database/address";
-import { checkIn, checkOut, isCheckedIn } from "~/database/attendanceEvent";
+import {
+  acknowledgeAttendance,
+  AcknowledgeAttendanceParams,
+  checkIn,
+  checkOut,
+  deleteAttendanceEvent,
+  isCheckedIn,
+} from "~/database/attendanceEvent";
 import { getDistance } from "~/utils/address";
-import { getUser } from "~/database/user";
+import { Messages } from "~/lang/config";
 
 export const attendFn = createServerFn({ method: "POST" })
   .validator((data: { x: string; y: string }) => data)
-  .handler(async (ctx) => {
+  .handler(async (ctx): Promise<keyof Messages> => {
     const session = await useAuthSession();
     const uid = session.data.uid;
     if (!uid) {
@@ -38,7 +45,7 @@ export const attendFn = createServerFn({ method: "POST" })
     });
 
     if (!location) {
-      return;
+      return "out-of-location";
     }
 
     if (checkedIn) {
@@ -49,6 +56,8 @@ export const attendFn = createServerFn({ method: "POST" })
         x: ctx.data.x,
         y: ctx.data.y,
       });
+
+      return "check-out-success";
     } else {
       await checkIn({
         ipAddress,
@@ -57,5 +66,35 @@ export const attendFn = createServerFn({ method: "POST" })
         x: ctx.data.x,
         y: ctx.data.y,
       });
+
+      return "check-in-success";
     }
+  });
+
+export const deleteFn = createServerFn({ method: "POST" })
+  .validator((id: string) => id)
+  .handler(async (ctx) => {
+    await deleteAttendanceEvent(ctx.data);
+  });
+
+export const acknowledgeFn = createServerFn({ method: "POST" })
+  .validator(
+    (
+      data: Pick<
+        AcknowledgeAttendanceParams,
+        "x" | "y" | "checkInTimestamp" | "checkOutTimestamp" | "notes"
+      > & { uid: string }
+    ) => data
+  )
+  .handler(async (ctx) => {
+    const userAgent = getHeader("User-Agent");
+    const xff = getHeader("x-forwarded-for") || "";
+    const ipAddress =
+      xff.split(",")[0]?.trim() || getHeader("x-real-ip") || "0.0.0.0";
+
+    await acknowledgeAttendance(ctx.data.uid, {
+      ...ctx.data,
+      userAgent,
+      ipAddress,
+    });
   });

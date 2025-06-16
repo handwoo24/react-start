@@ -1,8 +1,13 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useRouter,
+} from "@tanstack/react-router";
 import { createServerFn, useServerFn } from "@tanstack/react-start";
 import { useIntl } from "react-intl";
 import { Avatar } from "~/components/Avatar";
-import { loginFn, logoutFn } from "~/server/auth";
+import { logoutFn } from "~/server/auth";
 import CrownIcon from "~/icons/crown.svg?react";
 import EditIcon from "~/icons/edit.svg?react";
 import DeleteIcon from "~/icons/delete.svg?react";
@@ -24,10 +29,12 @@ import { getDaysByWeeks } from "~/utils/date";
 import { AttendanceEventType } from "~/model/attendanceEvents";
 import { useCallback, useMemo } from "react";
 import { attendFn } from "~/server/attendance";
-import { ConfirmButton } from "~/components/ConfirmButton";
 import { deleteFn } from "~/server/address";
 import { CsvDownloadButton } from "~/components/CsvDownloadButton";
 import { User } from "~/model/user";
+import { useModal } from "~/components/Modal";
+import { updateNameFn } from "~/server/user";
+import { Address } from "~/model/address";
 
 const loaderFn = createServerFn({ method: "GET" }).handler(async () => {
   const session = await useAuthSession();
@@ -63,6 +70,8 @@ const loaderFn = createServerFn({ method: "GET" }).handler(async () => {
     ? false
     : await isCheckedOut(user.id, startOfDay, endOfDay);
 
+  const weeks = getDaysByWeeks();
+
   return {
     user,
     attendanceEvents,
@@ -70,6 +79,7 @@ const loaderFn = createServerFn({ method: "GET" }).handler(async () => {
     addresses,
     checkedIn,
     checkedOut,
+    weeks,
   };
 });
 
@@ -81,12 +91,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { user, attendanceEvents, users, addresses, checkedIn, checkedOut } =
-    Route.useLoaderData();
+  const {
+    user,
+    attendanceEvents,
+    users,
+    addresses,
+    checkedIn,
+    checkedOut,
+    weeks,
+  } = Route.useLoaderData();
+
+  const router = useRouter();
 
   const logout = useServerFn(logoutFn);
   const attend = useServerFn(attendFn);
   const deleteAddress = useServerFn(deleteFn);
+  const updateName = useServerFn(updateNameFn);
+
+  const modal = useModal();
 
   const intl = useIntl();
 
@@ -96,7 +118,6 @@ function Home() {
     () => users.filter((user) => !user.admin && !user.disabled),
     []
   );
-  const weeks = useMemo(getDaysByWeeks, []);
 
   const getAttendanceRatio = (date: number) => {
     if (!normalUsers.length) {
@@ -120,21 +141,24 @@ function Home() {
     );
   };
 
-  const hasAttendance = useCallback((date: number) => {
-    if (user.admin) {
-      return -1;
-    }
+  const hasAttendance = useCallback(
+    (date: number) => {
+      if (user.admin) {
+        return -1;
+      }
 
-    const offset = dayjs().date(date);
-    const start = offset.startOf("day");
-    const end = offset.endOf("day");
+      const offset = dayjs().date(date);
+      const start = offset.startOf("day");
+      const end = offset.endOf("day");
 
-    const targets = attendanceEvents.filter(
-      (e) => e.timestamp <= end.valueOf() && e.timestamp >= start.valueOf()
-    );
+      const targets = attendanceEvents.filter(
+        (e) => e.timestamp <= end.valueOf() && e.timestamp >= start.valueOf()
+      );
 
-    return targets.length > 0 ? Math.max(...targets.map((e) => e.type)) : -1;
-  }, []);
+      return targets.length > 0 ? Math.max(...targets.map((e) => e.type)) : -1;
+    },
+    [attendanceEvents]
+  );
 
   const sheetData = useMemo(() => {
     const userMap = users.reduce(
@@ -163,6 +187,162 @@ function Home() {
         })
       : [];
   }, []);
+
+  const handleClickLogout = useCallback(() => {
+    return logout();
+  }, [logout]);
+
+  const handleClickAttend = useCallback(async () => {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+
+      const confirmed = confirm(
+        checkedIn
+          ? intl.formatMessage({ id: "confirm-check-out" })
+          : intl.formatMessage({ id: "confirm-check-in" })
+      );
+
+      if (confirmed) {
+        const id = await attend({
+          data: { x: longitude.toString(), y: latitude.toString() },
+        });
+        alert(intl.formatMessage({ id }));
+        router.invalidate();
+      }
+    });
+  }, [attend, router, intl, checkedIn]);
+
+  const handleClickDeleteAddress = useCallback(
+    (item: Address) => async () => {
+      const confirmed = confirm(
+        intl.formatMessage(
+          { id: "confirm-delete-address" },
+          { address: item.roadAddress }
+        )
+      );
+
+      if (confirmed) {
+        await deleteAddress({ data: item.id });
+        router.invalidate();
+      }
+    },
+    [deleteAddress, router]
+  );
+
+  const handleClickEditName = useCallback(
+    (user: User) => () => {
+      const action = async (formData: FormData) => {
+        const name = formData.get("name");
+        if (typeof name !== "string") {
+          alert(intl.formatMessage({ id: "hint-name" }));
+          return;
+        } else if (user.name === name) {
+          return;
+        }
+
+        await updateName({ data: { uid: user.id, name } });
+        modal.close();
+        router.invalidate();
+      };
+
+      modal.open(
+        <form className="modal-box" action={action}>
+          <h3>{intl.formatMessage({ id: "update-name" })}</h3>
+          <input
+            name="name"
+            defaultValue={user.name}
+            className="input w-full my-4 validator"
+            minLength={2}
+            maxLength={10}
+            required
+          />
+          <small className="validator-hint">
+            {intl.formatMessage({ id: "hint-name" })}
+          </small>
+          <div className="modal-action">
+            <input
+              className="btn btn-soft btn-primary not-md:btn-block"
+              type="submit"
+            />
+          </div>
+        </form>
+      );
+    },
+    [modal, updateName, intl, router]
+  );
+
+  const handleClickCalendarCell = useCallback(
+    (date: number) => () => {
+      const offset = dayjs().date(date);
+      const start = offset.startOf("day");
+      const end = offset.endOf("day");
+
+      const attendanceMap = attendanceEvents.reduce(
+        (acc, cur) => {
+          const target = dayjs(cur.timestamp);
+          if (target.isBefore(start) || target.isAfter(end)) {
+            return acc;
+          }
+          acc[cur.uid] = Math.max(acc[cur.uid] || -1, cur.type);
+          return acc;
+        },
+        {} as Record<string, AttendanceEventType>
+      );
+
+      const datas = users.reduce(
+        (acc, user) => {
+          const event = attendanceMap[user.id];
+          if (event) {
+            acc.push({ ...user, event });
+          }
+          return acc;
+        },
+        [] as (User & { event: AttendanceEventType })[]
+      );
+
+      modal.open(
+        <div className="modal-box">
+          <ul className="list">
+            <li>
+              <p className="caption">
+                {intl.formatDate(offset.toDate(), {
+                  month: "short",
+                  day: "2-digit",
+                }) +
+                  " " +
+                  intl.formatMessage({ id: "attend" })}
+              </p>
+            </li>
+            {datas.map((data, index) => (
+              <li key={data.id} className="list-row">
+                <p>{index + 1}</p>
+                <p>{data.name}</p>
+                <p>
+                  {data.event === AttendanceEventType.checkIn
+                    ? intl.formatMessage({ id: "check-in" })
+                    : intl.formatMessage({ id: "done" })}
+                </p>
+              </li>
+            ))}
+            {!datas.length && (
+              <li className="list-row">
+                <p>{intl.formatMessage({ id: "no-attendees" })}</p>
+              </li>
+            )}
+          </ul>
+          <div className="modal-action">
+            <button
+              className="btn btn-soft not-md:btn-block"
+              onClick={modal.close}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      );
+    },
+    [modal, intl, attendanceEvents, users]
+  );
 
   return (
     <main className="min-h-screen mx-auto max-w-5xl p-4 md:p-10">
@@ -195,9 +375,12 @@ function Home() {
               <div className="flex items-center">
                 <span className="font-semibold text-lg">{user.name}</span>
                 {!isDisabled && (
-                  <Link to="/" className="btn btn-sm btn-square btn-ghost">
+                  <button
+                    className="btn btn-sm btn-square btn-ghost"
+                    onClick={handleClickEditName(user)}
+                  >
                     <EditIcon className="size-4 opacity-60" />
-                  </Link>
+                  </button>
                 )}
               </div>
               <p className="text-sm text-base-content/60">{user.email}</p>
@@ -205,7 +388,10 @@ function Home() {
           </div>
 
           <div className="card-actions justify-end">
-            <button className="btn btn-error btn-soft" onClick={() => logout()}>
+            <button
+              className="btn btn-error btn-soft"
+              onClick={handleClickLogout}
+            >
               {intl.formatMessage({ id: "sign-out" })}
             </button>
 
@@ -214,28 +400,16 @@ function Home() {
                 {intl.formatMessage({ id: "done" })}
               </button>
             ) : (
-              <ConfirmButton
+              <button
                 className="btn btn-soft btn-primary"
-                message={
-                  checkedIn
-                    ? intl.formatMessage({ id: "confirm-check-out" })
-                    : intl.formatMessage({ id: "confirm-check-in" })
-                }
-                action={(geo) =>
-                  attend({
-                    data: {
-                      x: geo.coords.longitude.toString(),
-                      y: geo.coords.latitude.toString(),
-                    },
-                  })
-                }
+                onClick={handleClickAttend}
                 disabled={checkedOut || isDisabled}
                 data-checked-in={checkedIn}
               >
                 {checkedIn
                   ? intl.formatMessage({ id: "check-out" })
                   : intl.formatMessage({ id: "check-in" })}
-              </ConfirmButton>
+              </button>
             )}
           </div>
         </div>
@@ -250,7 +424,7 @@ function Home() {
               <p className="caption">
                 {intl.formatMessage({ id: "attendance-address" })}
               </p>
-              <Link to="/" className="btn btn-square btn-ghost">
+              <Link to="/address" className="btn btn-square btn-ghost">
                 <AddIcon className="size-6" />
               </Link>
             </li>
@@ -260,18 +434,12 @@ function Home() {
                 <div />
                 <p className="self-center tracking-wide">{item.roadAddress}</p>
                 <p className="list-col-wrap caption">{item.jibunAddress}</p>
-                <ConfirmButton
-                  action={() => deleteAddress({ data: item.id })}
-                  message={intl.formatMessage(
-                    { id: "confirm-delete" },
-                    {
-                      address: item.roadAddress,
-                    }
-                  )}
+                <button
+                  onClick={handleClickDeleteAddress(item)}
                   className="btn btn-square btn-error btn-ghost"
                 >
                   <DeleteIcon className="size-6" />
-                </ConfirmButton>
+                </button>
               </li>
             ))}
           </ul>
@@ -295,14 +463,17 @@ function Home() {
             </CsvDownloadButton>
           ) : null}
         </div>
-        <table className="calendar md:text-xl">
+        <table className="calendar md:text-xl table-fixed">
           <thead>
             <tr>
-              {Array.from({ length: 7 }, (_, i) => (
-                <th key={i} data-sunday={i === 0} data-saturday={i === 6}>
-                  {dayjs().day(i).format("dd")}
-                </th>
-              ))}
+              {Array.from({ length: 7 }, (_, i) => {
+                const date = dayjs().day(i).toDate();
+                return (
+                  <th key={i} data-sunday={i === 0} data-saturday={i === 6}>
+                    {intl.formatDate(date, { weekday: "short" })}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -326,6 +497,12 @@ function Home() {
                     <span>{date > 0 && date}</span>
                     {user.admin && date > 0 && (
                       <p className="caption">{getAttendanceRatio(date)}%</p>
+                    )}
+                    {user.admin && (
+                      <div
+                        className="calendar-cell-btn"
+                        onClick={handleClickCalendarCell(date)}
+                      />
                     )}
                   </td>
                 ))}
@@ -383,9 +560,12 @@ function Home() {
               <div>
                 <div className="flex items-center">
                   <span>{user.name}</span>
-                  <Link to="/" className="btn btn-xs btn-square btn-ghost">
+                  <button
+                    className="btn btn-xs btn-square btn-ghost"
+                    onClick={handleClickEditName(user)}
+                  >
                     <EditIcon className="size-3 opacity-60" />
-                  </Link>
+                  </button>
                 </div>
                 <div className="text-xs font-semibold opacity-60">
                   {user.email}
@@ -393,7 +573,11 @@ function Home() {
               </div>
 
               {!user.admin && (
-                <Link to="/" className="btn btn-square btn-ghost self-center">
+                <Link
+                  to="/users/$uid"
+                  params={{ uid: user.id }}
+                  className="btn btn-square btn-ghost self-center"
+                >
                   <RightIcon className="size-6" />
                 </Link>
               )}
@@ -416,14 +600,26 @@ function Home() {
             </thead>
             <tbody>
               {attendanceEvents.map((e) => {
-                const datetime = dayjs(e.timestamp).format("YYYY-MM-DD HH:mm");
+                const date = new Date(e.timestamp);
+
+                const datePart = intl.formatDate(date, {
+                  month: "2-digit",
+                  day: "2-digit",
+                });
+
+                const timePart = intl.formatTime(date, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                });
+
                 const eventType =
                   e.type === AttendanceEventType.checkIn
                     ? intl.formatMessage({ id: "check-in" })
                     : intl.formatMessage({ id: "check-out" });
                 return (
                   <tr key={e.id}>
-                    <td>{datetime}</td>
+                    <td>{`${datePart} ${timePart}`}</td>
                     <td>{eventType}</td>
                     <td className="text-xs">{e.notes}</td>
                   </tr>

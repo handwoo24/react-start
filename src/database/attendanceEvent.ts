@@ -150,3 +150,51 @@ export const deleteAttendanceEvent = async (id: string) => {
     throw new Error("Failed to delete attendance event");
   }
 };
+
+const acknowledgeAttendanceParamsDto = attendanceEventSchema
+  .pick({ userAgent: true, notes: true, ipAddress: true, x: true, y: true })
+  .extend({ checkInTimestamp: z.number(), checkOutTimestamp: z.number() });
+
+export type AcknowledgeAttendanceParams = z.infer<
+  typeof acknowledgeAttendanceParamsDto
+>;
+
+export const acknowledgeAttendance = async (
+  uid: string,
+  params: AcknowledgeAttendanceParams
+) => {
+  try {
+    const parsed = acknowledgeAttendanceParamsDto.parse(params);
+
+    const batch = firestore.batch();
+
+    const checkInDoc = collection().doc();
+    const checkOutDoc = collection().doc();
+
+    batch.create(checkInDoc, {
+      uid,
+      ipAddress: parsed.ipAddress,
+      userAgent: parsed.userAgent,
+      notes: parsed.notes,
+      type: AttendanceEventType.checkIn,
+      timestamp: parsed.checkInTimestamp,
+      x: parsed.x,
+      y: parsed.y,
+    });
+    batch.create(checkOutDoc, {
+      uid,
+      ipAddress: parsed.ipAddress,
+      userAgent: parsed.userAgent,
+      notes: parsed.notes,
+      type: AttendanceEventType.checkOut,
+      timestamp: parsed.checkOutTimestamp,
+      x: parsed.x,
+      y: parsed.y,
+    });
+
+    return batch.commit();
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to acknowledge attendance");
+  }
+};

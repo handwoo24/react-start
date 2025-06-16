@@ -10,7 +10,7 @@ export interface ConfirmButtonProps
   to?: string;
 }
 
-export const ConfirmButton = ({
+const ConfirmButton = ({
   action,
   message,
   to,

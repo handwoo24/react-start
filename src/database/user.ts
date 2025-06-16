@@ -83,10 +83,10 @@ const updateUserParamsDto = z
 
 type UpdateUserParams = z.infer<typeof updateUserParamsDto>;
 
-export const updateUser = async (userId: string, params: UpdateUserParams) => {
+export const updateUser = async (uid: string, params: UpdateUserParams) => {
   try {
     const parsed = updateUserParamsDto.parse(params);
-    return collection().doc(userId).update(parsed);
+    return collection().doc(uid).update(parsed);
   } catch (error) {
     console.error(error);
     throw new Error("Failed to update users");

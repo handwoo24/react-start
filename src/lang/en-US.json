@@ -13,7 +13,8 @@
   "detail-history": "Histories",
   "confirm-attend": "Do you want to mark {name} as attended?",
   "attend": "Attend",
-  "confirm-delete": "Do you want to delete the {datetime} {type} event?",
+  "confirm-delete-event": "Do you want to delete the {datetime} {type} event?",
+  "confirm-delete-address": "Do you want to delete the {address}?",
   "acknowledgement": "Attendance Acknowledgment",
   "invalid-date": "Invalid Date.",
   "user-name": "Name",
@@ -51,5 +52,6 @@
   "sign-in-with-google": "Sign in with Google",
   "required-login": "Please login to continue.",
   "required-admin": "Administrator privileges are required.",
-  "back-to-home": "Back to Home"
+  "back-to-home": "Back to Home",
+  "no-attendees": "No attendees."
 }
