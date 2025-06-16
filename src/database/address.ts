@@ -1,5 +1,5 @@
-import { firestore } from "@/firebase/config";
-import { Address } from "@/model/address";
+import { firestore } from "~/firebase/config";
+import { Address } from "~/model/address";
 import { CollectionReference } from "firebase-admin/firestore";
 
 const collection = () =>

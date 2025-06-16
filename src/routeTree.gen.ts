@@ -28,6 +28,7 @@ import { Route as PathlessLayoutNestedLayoutRouteARouteImport } from './routes/_
 import { ServerRoute as CustomScriptDotjsServerRouteImport } from './routes/customScript[.]js'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users.$userId'
+import { ServerRoute as ApiAuthCallbackGoogleServerRouteImport } from './routes/api/auth/callback/google'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -117,6 +118,12 @@ const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
   path: '/$userId',
   getParentRoute: () => ApiUsersServerRoute,
 } as any)
+const ApiAuthCallbackGoogleServerRoute =
+  ApiAuthCallbackGoogleServerRouteImport.update({
+    id: '/api/auth/callback/google',
+    path: '/api/auth/callback/google',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -223,29 +230,46 @@ export interface FileServerRoutesByFullPath {
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/auth/callback/google': typeof ApiAuthCallbackGoogleServerRoute
 }
 export interface FileServerRoutesByTo {
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/auth/callback/google': typeof ApiAuthCallbackGoogleServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
+  '/api/auth/callback/google': typeof ApiAuthCallbackGoogleServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/customScript.js' | '/api/users' | '/api/users/$userId'
+  fullPaths:
+    | '/customScript.js'
+    | '/api/users'
+    | '/api/users/$userId'
+    | '/api/auth/callback/google'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/customScript.js' | '/api/users' | '/api/users/$userId'
-  id: '__root__' | '/customScript.js' | '/api/users' | '/api/users/$userId'
+  to:
+    | '/customScript.js'
+    | '/api/users'
+    | '/api/users/$userId'
+    | '/api/auth/callback/google'
+  id:
+    | '__root__'
+    | '/customScript.js'
+    | '/api/users'
+    | '/api/users/$userId'
+    | '/api/auth/callback/google'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   CustomScriptDotjsServerRoute: typeof CustomScriptDotjsServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
+  ApiAuthCallbackGoogleServerRoute: typeof ApiAuthCallbackGoogleServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -373,6 +397,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersUserIdServerRouteImport
       parentRoute: typeof ApiUsersServerRoute
     }
+    '/api/auth/callback/google': {
+      id: '/api/auth/callback/google'
+      path: '/api/auth/callback/google'
+      fullPath: '/api/auth/callback/google'
+      preLoaderRoute: typeof ApiAuthCallbackGoogleServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -457,6 +488,7 @@ export const routeTree = rootRouteImport
 const rootServerRouteChildren: RootServerRouteChildren = {
   CustomScriptDotjsServerRoute: CustomScriptDotjsServerRoute,
   ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
+  ApiAuthCallbackGoogleServerRoute: ApiAuthCallbackGoogleServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

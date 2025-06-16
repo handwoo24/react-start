@@ -1,9 +1,9 @@
-import { firestore } from "@/firebase/config";
+import { firestore } from "~/firebase/config";
 import {
   AttendanceEvent,
   attendanceEventSchema,
   AttendanceEventType,
-} from "@/model/attendanceEvents";
+} from "~/model/attendanceEvents";
 import dayjs from "dayjs";
 import { CollectionReference } from "firebase-admin/firestore";
 import { z } from "zod";

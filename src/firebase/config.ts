@@ -2,9 +2,9 @@ import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
 const credential = cert({
-  privateKey: process.env.AUTH_FIREBASE_PRIVATE_KEY,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  clientEmail: process.env.AUTH_FIREBASE_CLIENT_EMAIL,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
 });
 
 let app = getApps().at(0);
