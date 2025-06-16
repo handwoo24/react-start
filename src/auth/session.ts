@@ -1,10 +1,9 @@
 import { useSession } from "@tanstack/react-start/server";
-import { User } from "~/model/user";
 
 type Session = {
-  token: string;
-  expires: number;
-  user: User;
+  token?: string;
+  expires?: number;
+  uid?: string;
 };
 
 const AUTH_SECRET = process.env.AUTH_SECRET;

@@ -25,9 +25,9 @@ export const getUsers = async () => {
   }
 };
 
-export const getUser = async (userId: string) => {
+export const getUser = async (uid: string) => {
   try {
-    const snapshot = await collection().doc(userId).get();
+    const snapshot = await collection().doc(uid).get();
     const data = snapshot.data();
     if (!data) {
       return null;
@@ -52,10 +52,11 @@ export const createUserByGoogle = async (idToken: TokenPayload) => {
       emailVerified: idToken.email_verified,
       picture: idToken.picture,
       admin: false,
+      disabled: true,
     });
 
     const account = zodAccountSchema.omit({ id: true }).parse({
-      userId: userRef.id,
+      uid: userRef.id,
       provider: "google",
       providerAccountId: idToken.sub,
     });

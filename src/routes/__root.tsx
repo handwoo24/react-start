@@ -8,12 +8,18 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import * as React from "react";
-import { IntlProvider } from "react-intl";
+import { FormattedMessage, IntlProvider } from "react-intl";
 import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import css from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
 import { getLocale, getMessages } from "~/lang/config";
+import timezone from "dayjs/plugin/timezone";
+import "dayjs/locale/ko";
+import dayjs from "dayjs";
+
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Seoul");
 
 export const Route = createRootRoute({
   head: () => ({
@@ -79,7 +85,7 @@ function RootComponent() {
   );
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({ children }: React.PropsWithChildren) {
   const locale = getLocale(navigator.language);
 
   return (
@@ -87,61 +93,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="antialiased">
         <IntlProvider locale={locale} messages={getMessages(locale)}>
-          <div className="p-2 flex gap-2 text-lg">
-            <Link
-              to="/"
-              activeProps={{
-                className: "font-bold",
-              }}
-              activeOptions={{ exact: true }}
-            >
-              Home
-            </Link>{" "}
-            <Link
-              to="/posts"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Posts
-            </Link>{" "}
-            <Link
-              to="/users"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Users
-            </Link>{" "}
-            <Link
-              to="/route-a"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Pathless Layout
-            </Link>{" "}
-            <Link
-              to="/deferred"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Deferred
-            </Link>{" "}
-            <Link
-              // @ts-expect-error
-              to="/this-route-does-not-exist"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              This Route Does Not Exist
+          <div className="navbar shadow-sm bg-base-100 sticky top-0 z-50">
+            <Link to="/" className="btn btn-ghost text-xl">
+              <FormattedMessage id="title" />
             </Link>
           </div>
-          <hr />
           {children}
           <TanStackRouterDevtools position="bottom-right" />
           <Scripts />

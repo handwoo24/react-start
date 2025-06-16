@@ -34,16 +34,16 @@ export const ServerRoute = createServerFileRoute(
 
     let account = await getAccountByGoogle(idToken.sub);
     if (account) {
-      const user = await getUser(account.userId);
+      const user = await getUser(account.uid);
       if (!user) {
         return new Response("Not found user", { status: 400 });
       }
 
-      await session.update({ token, user, expires });
+      await session.update({ token, uid: user.id, expires });
     } else {
       const user = await createUserByGoogle(idToken);
 
-      await session.update({ token, user, expires });
+      await session.update({ token, uid: user.id, expires });
     }
 
     throw redirect({ to: "/" });

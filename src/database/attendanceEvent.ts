@@ -9,11 +9,11 @@ import { CollectionReference } from "firebase-admin/firestore";
 import { z } from "zod";
 
 const attendanceParamsDto = attendanceEventSchema.pick({
-  sessionId: true,
-  userId: true,
+  uid: true,
   userAgent: true,
   ipAddress: true,
-  geolocationPosition: true,
+  x: true,
+  y: true,
 });
 
 type AttendanceParams = z.infer<typeof attendanceParamsDto>;
@@ -23,15 +23,11 @@ const collection = () =>
     Omit<AttendanceEvent, "id">
   >;
 
-export const isCheckedIn = async (
-  userId: string,
-  start: number,
-  end: number
-) => {
+export const isCheckedIn = async (uid: string, start: number, end: number) => {
   const existsQuery = await collection()
     .where("timestamp", ">=", start)
     .where("timestamp", "<=", end)
-    .where("userId", "==", userId)
+    .where("uid", "==", uid)
     .where("type", "==", AttendanceEventType.checkIn)
     .limit(1)
     .get();
@@ -39,15 +35,11 @@ export const isCheckedIn = async (
   return !!existsQuery.size;
 };
 
-export const isCheckedOut = async (
-  userId: string,
-  start: number,
-  end: number
-) => {
+export const isCheckedOut = async (uid: string, start: number, end: number) => {
   const existsQuery = await collection()
     .where("timestamp", ">=", start)
     .where("timestamp", "<=", end)
-    .where("userId", "==", userId)
+    .where("uid", "==", uid)
     .where("type", "==", AttendanceEventType.checkOut)
     .limit(1)
     .get();
@@ -63,7 +55,7 @@ export const checkIn = async (params: AttendanceParams) => {
     const start = now.startOf("day").valueOf();
     const end = now.endOf("day").valueOf();
 
-    if (await isCheckedIn(parsed.userId, start, end)) {
+    if (await isCheckedIn(parsed.uid, start, end)) {
       throw new Error("User has already checked in today.");
     }
 
@@ -86,9 +78,9 @@ export const checkOut = async (params: AttendanceParams) => {
     const start = now.startOf("day").valueOf();
     const end = now.endOf("day").valueOf();
 
-    if (!(await isCheckedIn(parsed.userId, start, end))) {
+    if (!(await isCheckedIn(parsed.uid, start, end))) {
       throw new Error("User has not checked in yet.");
-    } else if (await isCheckedOut(parsed.userId, start, end)) {
+    } else if (await isCheckedOut(parsed.uid, start, end)) {
       throw new Error("User has already checked out today.");
     }
 
@@ -103,60 +95,14 @@ export const checkOut = async (params: AttendanceParams) => {
   }
 };
 
-const acknowledgeAttendanceParamsDto = attendanceEventSchema
-  .pick({ userAgent: true, notes: true, ipAddress: true })
-  .extend({ checkInTimestamp: z.number(), checkOutTimestamp: z.number() });
-
-export type AcknowledgeAttendanceParams = z.infer<
-  typeof acknowledgeAttendanceParamsDto
->;
-
-export const acknowledgeAttendance = async (
-  userId: string,
-  params: AcknowledgeAttendanceParams
-) => {
-  try {
-    const parsed = acknowledgeAttendanceParamsDto.parse(params);
-    const { checkInTimestamp, checkOutTimestamp, notes, ipAddress, userAgent } =
-      parsed;
-
-    const batch = firestore.batch();
-
-    const checkInDoc = collection().doc();
-    const checkOutDoc = collection().doc();
-
-    batch.create(checkInDoc, {
-      userId,
-      ipAddress,
-      userAgent,
-      notes,
-      type: AttendanceEventType.checkIn,
-      timestamp: checkInTimestamp,
-    });
-    batch.create(checkOutDoc, {
-      userId,
-      ipAddress,
-      userAgent,
-      notes,
-      type: AttendanceEventType.checkOut,
-      timestamp: checkOutTimestamp,
-    });
-
-    return batch.commit();
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to acknowledge attendance");
-  }
-};
-
 export const getUserAttendanceEvents = async (
-  userId: string,
+  uid: string,
   start: number,
   end: number
 ) => {
   try {
     const snapshot = await collection()
-      .where("userId", "==", userId)
+      .where("uid", "==", uid)
       .where("timestamp", ">=", start)
       .where("timestamp", "<=", end)
       .orderBy("timestamp", "desc")
