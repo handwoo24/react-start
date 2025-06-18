@@ -14,6 +14,7 @@ import { NotFound } from "~/components/NotFound";
 import css from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
 import { getLocale, getMessages } from "~/lang/config";
+import { ModalProvider } from "~/components/Modal";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,7 +24,7 @@ export const Route = createRootRoute({
       },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       ...seo({
         title:
@@ -79,7 +80,7 @@ function RootComponent() {
   );
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({ children }: React.PropsWithChildren) {
   const locale = getLocale(navigator.language);
 
   return (
@@ -89,63 +90,65 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <IntlProvider locale={locale} messages={getMessages(locale)}>
-          <div className="p-2 flex gap-2 text-lg">
-            <Link
-              to="/"
-              activeProps={{
-                className: "font-bold",
-              }}
-              activeOptions={{ exact: true }}
-            >
-              Home
-            </Link>{" "}
-            <Link
-              to="/posts"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Posts
-            </Link>{" "}
-            <Link
-              to="/users"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Users
-            </Link>{" "}
-            <Link
-              to="/route-a"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Pathless Layout
-            </Link>{" "}
-            <Link
-              to="/deferred"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              Deferred
-            </Link>{" "}
-            <Link
-              // @ts-expect-error
-              to="/this-route-does-not-exist"
-              activeProps={{
-                className: "font-bold",
-              }}
-            >
-              This Route Does Not Exist
-            </Link>
-          </div>
-          <hr />
-          {children}
-          <TanStackRouterDevtools position="bottom-right" />
-          <Scripts />
+          <ModalProvider>
+            <div className="p-2 flex gap-2 text-lg">
+              <Link
+                to="/"
+                activeProps={{
+                  className: "font-bold",
+                }}
+                activeOptions={{ exact: true }}
+              >
+                Home
+              </Link>{" "}
+              <Link
+                to="/posts"
+                activeProps={{
+                  className: "font-bold",
+                }}
+              >
+                Posts
+              </Link>{" "}
+              <Link
+                to="/users"
+                activeProps={{
+                  className: "font-bold",
+                }}
+              >
+                Users
+              </Link>{" "}
+              <Link
+                to="/route-a"
+                activeProps={{
+                  className: "font-bold",
+                }}
+              >
+                Pathless Layout
+              </Link>{" "}
+              <Link
+                to="/deferred"
+                activeProps={{
+                  className: "font-bold",
+                }}
+              >
+                Deferred
+              </Link>{" "}
+              <Link
+                // @ts-expect-error
+                to="/this-route-does-not-exist"
+                activeProps={{
+                  className: "font-bold",
+                }}
+              >
+                This Route Does Not Exist
+              </Link>
+            </div>
+            <hr />
+            {children}
+            <TanStackRouterDevtools position="bottom-right" />
+          </ModalProvider>
         </IntlProvider>
+        <Scripts />
       </body>
     </html>
   );
