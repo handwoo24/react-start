@@ -1,5 +1,6 @@
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { defineConfig } from "vite";
+import svgr from "vite-plugin-svgr";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -8,6 +9,7 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [
+    svgr(),
     tsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
