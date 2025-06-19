@@ -1,9 +1,11 @@
+import { useRouterState } from "@tanstack/react-router";
 import {
   createContext,
   PropsWithChildren,
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -21,12 +23,13 @@ const ModalContext = createContext<{
 export const useModal = () => useContext(ModalContext);
 
 export const ModalProvider = ({ children }: PropsWithChildren) => {
+  const { location } = useRouterState();
+
   const [portal, setPortal] = useState<HTMLElement>();
+  const [content, setContent] = useState<ReactNode>(null);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>(null);
-
-  const [content, setContent] = useState<ReactNode>(null);
 
   const open = useCallback((element: ReactNode) => {
     if (timeoutRef.current) {
@@ -54,6 +57,14 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (dialogRef.current?.open) {
+        dialogRef.current.close();
+      }
+    };
+  }, [location.pathname]);
 
   return (
     <ModalContext value={{ open, close }}>
