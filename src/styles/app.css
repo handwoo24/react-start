@@ -8,3 +8,31 @@
 main {
   @apply min-h-screen;
 }
+
+.toast-item-enter {
+  @apply opacity-0 scale-90;
+}
+
+.toast-item-enter-active {
+  @apply opacity-100 scale-100 transition-[opacity,scale,transform] duration-250 ease-out;
+}
+
+.toast-item-exit {
+  @apply opacity-100 scale-100;
+}
+
+.toast-item-exit-active {
+  @apply opacity-0 scale-90 transition-[opacity,scale,transform] duration-250 ease-in;
+}
+
+@utility toast-desktop {
+  @apply top-20 bottom-auto right-4 left-auto;
+  --toast-y: 0;
+  --toast-x: 0;
+}
+
+@utility toast-mobile {
+  @apply left-4 right-auto top-auto bottom-20;
+  --toast-y: 0;
+  --toast-x: 0;
+}

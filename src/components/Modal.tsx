@@ -32,12 +32,22 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
   const timeoutRef = useRef<NodeJS.Timeout>(null);
 
   const open = useCallback((element: ReactNode) => {
+    const isOpend = dialogRef.current?.open;
+    if (isOpend) {
+      dialogRef.current?.close();
+    }
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    setContent(element);
-    dialogRef.current?.showModal();
+    timeoutRef.current = setTimeout(
+      () => {
+        setContent(element);
+        dialogRef.current?.showModal();
+      },
+      isOpend ? 300 : 0
+    );
   }, []);
 
   const close = useCallback(() => {
@@ -45,7 +55,7 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const handleClose = useCallback(() => {
-    timeoutRef.current = setTimeout(() => setContent(null), 1000);
+    timeoutRef.current = setTimeout(() => setContent(null), 100);
   }, []);
 
   useLayoutEffect(() => {

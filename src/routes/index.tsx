@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { useCallback, useReducer } from "react";
 import { FormattedMessage } from "react-intl";
 import { useModal } from "~/components/Modal";
+import { useToast } from "~/components/Toast";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -9,6 +10,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const modal = useModal();
+  const toast = useToast();
+
+  const [count, increment] = useReducer((prev) => prev + 1, 1);
 
   const handleAlert = useCallback(() => {
     modal.open(
@@ -51,6 +55,11 @@ function Home() {
     );
   }, []);
 
+  const handleToast = useCallback(() => {
+    toast.push(<div className="alert alert-info">{count}번째 토스트</div>);
+    increment();
+  }, [toast, count]);
+
   return (
     <div className="p-2">
       <h3>
@@ -61,6 +70,9 @@ function Home() {
       </button>
       <button className="btn-error btn" onClick={handleModal}>
         modal
+      </button>
+      <button className="btn btn-info" onClick={handleToast}>
+        toast
       </button>
     </div>
   );

@@ -15,6 +15,7 @@ import css from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
 import { getLocale, getMessages } from "~/lang/config";
 import { ModalProvider } from "~/components/Modal";
+import { ToastProvider } from "~/components/Toast";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -84,69 +85,71 @@ function RootDocument({ children }: React.PropsWithChildren) {
   const locale = getLocale(navigator.language);
 
   return (
-    <html>
+    <html lang={navigator.language}>
       <head>
         <HeadContent />
       </head>
       <body>
         <IntlProvider locale={locale} messages={getMessages(locale)}>
-          <ModalProvider>
-            <div className="p-2 flex gap-2 text-lg">
-              <Link
-                to="/"
-                activeProps={{
-                  className: "font-bold",
-                }}
-                activeOptions={{ exact: true }}
-              >
-                Home
-              </Link>{" "}
-              <Link
-                to="/posts"
-                activeProps={{
-                  className: "font-bold",
-                }}
-              >
-                Posts
-              </Link>{" "}
-              <Link
-                to="/users"
-                activeProps={{
-                  className: "font-bold",
-                }}
-              >
-                Users
-              </Link>{" "}
-              <Link
-                to="/route-a"
-                activeProps={{
-                  className: "font-bold",
-                }}
-              >
-                Pathless Layout
-              </Link>{" "}
-              <Link
-                to="/deferred"
-                activeProps={{
-                  className: "font-bold",
-                }}
-              >
-                Deferred
-              </Link>{" "}
-              <Link
-                // @ts-expect-error
-                to="/this-route-does-not-exist"
-                activeProps={{
-                  className: "font-bold",
-                }}
-              >
-                This Route Does Not Exist
-              </Link>
-            </div>
-            <hr />
-            {children}
-            <TanStackRouterDevtools position="bottom-right" />
-          </ModalProvider>
+          <ToastProvider>
+            <ModalProvider>
+              <div className="p-2 flex gap-2 text-lg">
+                <Link
+                  to="/"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                  activeOptions={{ exact: true }}
+                >
+                  Home
+                </Link>{" "}
+                <Link
+                  to="/posts"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                >
+                  Posts
+                </Link>{" "}
+                <Link
+                  to="/users"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                >
+                  Users
+                </Link>{" "}
+                <Link
+                  to="/route-a"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                >
+                  Pathless Layout
+                </Link>{" "}
+                <Link
+                  to="/deferred"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                >
+                  Deferred
+                </Link>{" "}
+                <Link
+                  // @ts-expect-error
+                  to="/this-route-does-not-exist"
+                  activeProps={{
+                    className: "font-bold",
+                  }}
+                >
+                  This Route Does Not Exist
+                </Link>
+              </div>
+              <hr />
+              {children}
+              <TanStackRouterDevtools position="bottom-right" />
+            </ModalProvider>
+          </ToastProvider>
         </IntlProvider>
         <Scripts />
       </body>
