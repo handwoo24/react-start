@@ -57,8 +57,10 @@ export const Route = createRootRoute({
     ],
     scripts: [
       {
-        src: "/customScript.js",
+        src: "https://twemoji.maxcdn.com/v/latest/twemoji.min.js",
         type: "text/javascript",
+        crossOrigin: "anonymous",
+        async: true,
       },
     ],
   }),
@@ -118,14 +120,6 @@ function RootDocument({ children }: React.PropsWithChildren) {
                   }}
                 >
                   Users
-                </Link>{" "}
-                <Link
-                  to="/route-a"
-                  activeProps={{
-                    className: "font-bold",
-                  }}
-                >
-                  Pathless Layout
                 </Link>{" "}
                 <Link
                   to="/deferred"

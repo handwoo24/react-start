@@ -16,3 +16,10 @@ export const logoutFn = createServerFn({ method: "GET" }).handler(async () => {
 
   throw redirect({ to: "/auth/login" });
 });
+
+export const getSessionFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const session = await useAuthSession();
+    return session.data;
+  }
+);

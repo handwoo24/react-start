@@ -12,6 +12,22 @@ interface QueryOptions {
   parseErrorPrefix?: string;
 }
 
+// 1) throwOnEmpty: true 경우
+export async function querySingle<T>(
+  sql: string,
+  params: unknown[],
+  schema: ZodSchema<T>,
+  options: QueryOptions & { throwOnEmpty: true }
+): Promise<T>;
+
+// 2) 그 외(false 또는 미지정) 경우
+export async function querySingle<T>(
+  sql: string,
+  params: unknown[],
+  schema: ZodSchema<T>,
+  options?: QueryOptions & { throwOnEmpty?: false }
+): Promise<T | null>;
+
 export async function querySingle<T>(
   sql: string,
   params: unknown[],
