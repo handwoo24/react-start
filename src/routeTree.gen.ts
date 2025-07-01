@@ -15,15 +15,17 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as RedirectRouteImport } from './routes/redirect'
 import { Route as PostsRouteImport } from './routes/posts'
 import { Route as DeferredRouteImport } from './routes/deferred'
-import { Route as PrivateRouteImport } from './routes/_private'
+import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as UsersUserIdRouteImport } from './routes/users.$userId'
 import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as PrivateProfileRouteImport } from './routes/_private/profile'
+import { Route as LayoutSampleRouteImport } from './routes/_layout/sample'
+import { Route as LayoutPrivateRouteImport } from './routes/_layout/_private'
 import { Route as PostsPostIdDeepRouteImport } from './routes/posts_.$postId.deep'
+import { Route as LayoutPrivateProfileRouteImport } from './routes/_layout/_private/profile'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users.$userId'
 
@@ -49,8 +51,8 @@ const DeferredRoute = DeferredRouteImport.update({
   path: '/deferred',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivateRoute = PrivateRouteImport.update({
-  id: '/_private',
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -83,15 +85,24 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivateProfileRoute = PrivateProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => PrivateRoute,
+const LayoutSampleRoute = LayoutSampleRouteImport.update({
+  id: '/sample',
+  path: '/sample',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPrivateRoute = LayoutPrivateRouteImport.update({
+  id: '/_private',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const PostsPostIdDeepRoute = PostsPostIdDeepRouteImport.update({
   id: '/posts_/$postId/deep',
   path: '/posts/$postId/deep',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutPrivateProfileRoute = LayoutPrivateProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => LayoutPrivateRoute,
 } as any)
 const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
   id: '/api/users',
@@ -106,46 +117,50 @@ const ApiUsersUserIdServerRoute = ApiUsersUserIdServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '': typeof PrivateRouteWithChildren
+  '': typeof LayoutPrivateRouteWithChildren
   '/deferred': typeof DeferredRoute
   '/posts': typeof PostsRouteWithChildren
   '/redirect': typeof RedirectRoute
   '/users': typeof UsersRouteWithChildren
-  '/profile': typeof PrivateProfileRoute
+  '/sample': typeof LayoutSampleRoute
   '/auth/login': typeof AuthLoginRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/profile': typeof LayoutPrivateProfileRoute
   '/posts/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '': typeof PrivateRouteWithChildren
+  '': typeof LayoutPrivateRouteWithChildren
   '/deferred': typeof DeferredRoute
   '/redirect': typeof RedirectRoute
-  '/profile': typeof PrivateProfileRoute
+  '/sample': typeof LayoutSampleRoute
   '/auth/login': typeof AuthLoginRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/posts': typeof PostsIndexRoute
   '/users': typeof UsersIndexRoute
+  '/profile': typeof LayoutPrivateProfileRoute
   '/posts/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_private': typeof PrivateRouteWithChildren
+  '/_layout': typeof LayoutRouteWithChildren
   '/deferred': typeof DeferredRoute
   '/posts': typeof PostsRouteWithChildren
   '/redirect': typeof RedirectRoute
   '/users': typeof UsersRouteWithChildren
-  '/_private/profile': typeof PrivateProfileRoute
+  '/_layout/_private': typeof LayoutPrivateRouteWithChildren
+  '/_layout/sample': typeof LayoutSampleRoute
   '/auth/login': typeof AuthLoginRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/_layout/_private/profile': typeof LayoutPrivateProfileRoute
   '/posts_/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRouteTypes {
@@ -157,12 +172,13 @@ export interface FileRouteTypes {
     | '/posts'
     | '/redirect'
     | '/users'
-    | '/profile'
+    | '/sample'
     | '/auth/login'
     | '/posts/$postId'
     | '/users/$userId'
     | '/posts/'
     | '/users/'
+    | '/profile'
     | '/posts/$postId/deep'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,33 +186,36 @@ export interface FileRouteTypes {
     | ''
     | '/deferred'
     | '/redirect'
-    | '/profile'
+    | '/sample'
     | '/auth/login'
     | '/posts/$postId'
     | '/users/$userId'
     | '/posts'
     | '/users'
+    | '/profile'
     | '/posts/$postId/deep'
   id:
     | '__root__'
     | '/'
-    | '/_private'
+    | '/_layout'
     | '/deferred'
     | '/posts'
     | '/redirect'
     | '/users'
-    | '/_private/profile'
+    | '/_layout/_private'
+    | '/_layout/sample'
     | '/auth/login'
     | '/posts/$postId'
     | '/users/$userId'
     | '/posts/'
     | '/users/'
+    | '/_layout/_private/profile'
     | '/posts_/$postId/deep'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PrivateRoute: typeof PrivateRouteWithChildren
+  LayoutRoute: typeof LayoutRouteWithChildren
   DeferredRoute: typeof DeferredRoute
   PostsRoute: typeof PostsRouteWithChildren
   RedirectRoute: typeof RedirectRoute
@@ -259,11 +278,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeferredRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_private': {
-      id: '/_private'
+    '/_layout': {
+      id: '/_layout'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof PrivateRouteImport
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -308,12 +327,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_private/profile': {
-      id: '/_private/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof PrivateProfileRouteImport
-      parentRoute: typeof PrivateRoute
+    '/_layout/sample': {
+      id: '/_layout/sample'
+      path: '/sample'
+      fullPath: '/sample'
+      preLoaderRoute: typeof LayoutSampleRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/_private': {
+      id: '/_layout/_private'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutPrivateRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/posts_/$postId/deep': {
       id: '/posts_/$postId/deep'
@@ -321,6 +347,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/posts/$postId/deep'
       preLoaderRoute: typeof PostsPostIdDeepRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_layout/_private/profile': {
+      id: '/_layout/_private/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof LayoutPrivateProfileRouteImport
+      parentRoute: typeof LayoutPrivateRoute
     }
   }
 }
@@ -343,16 +376,30 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
-interface PrivateRouteChildren {
-  PrivateProfileRoute: typeof PrivateProfileRoute
+interface LayoutPrivateRouteChildren {
+  LayoutPrivateProfileRoute: typeof LayoutPrivateProfileRoute
 }
 
-const PrivateRouteChildren: PrivateRouteChildren = {
-  PrivateProfileRoute: PrivateProfileRoute,
+const LayoutPrivateRouteChildren: LayoutPrivateRouteChildren = {
+  LayoutPrivateProfileRoute: LayoutPrivateProfileRoute,
 }
 
-const PrivateRouteWithChildren =
-  PrivateRoute._addFileChildren(PrivateRouteChildren)
+const LayoutPrivateRouteWithChildren = LayoutPrivateRoute._addFileChildren(
+  LayoutPrivateRouteChildren,
+)
+
+interface LayoutRouteChildren {
+  LayoutPrivateRoute: typeof LayoutPrivateRouteWithChildren
+  LayoutSampleRoute: typeof LayoutSampleRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutPrivateRoute: LayoutPrivateRouteWithChildren,
+  LayoutSampleRoute: LayoutSampleRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface PostsRouteChildren {
   PostsPostIdRoute: typeof PostsPostIdRoute
@@ -392,7 +439,7 @@ const ApiUsersServerRouteWithChildren = ApiUsersServerRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PrivateRoute: PrivateRouteWithChildren,
+  LayoutRoute: LayoutRouteWithChildren,
   DeferredRoute: DeferredRoute,
   PostsRoute: PostsRouteWithChildren,
   RedirectRoute: RedirectRoute,

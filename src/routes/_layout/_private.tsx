@@ -3,7 +3,7 @@ import { UserProvider } from "~/components/UserProvider";
 import { getSessionFn } from "~/server/auth";
 import { getUserFn } from "~/server/user";
 
-export const Route = createFileRoute("/_private")({
+export const Route = createFileRoute("/_layout/_private")({
   component: RouteComponent,
   async loader() {
     const session = await getSessionFn();

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useUser } from "~/components/UserProvider";
 
-export const Route = createFileRoute("/_private/profile")({
+export const Route = createFileRoute("/_layout/_private/profile")({
   component: RouteComponent,
 });
 
